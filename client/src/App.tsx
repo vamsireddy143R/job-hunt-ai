@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-import { Upload, FileText, Bot, AlertTriangle, Loader2, Sparkles, BrainCircuit, Target, X, ChevronRight, Zap, Check } from 'lucide-react';
+import { FileText, Bot, AlertTriangle, Loader2, Sparkles, BrainCircuit, Target, X, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Types matching Backend
