@@ -1,8 +1,8 @@
 # JobHunt AI - Resume & Interview Agent 🚀
 
-**Student Name**: [Your Name]
-**Project Link**: [Your Vercel URL]
-**Loom Video**: [Your Loom Link]
+**Student Name**: MUNAGALA CHANDRA VAMSI REDDY
+**Project Link**: https://job-hunt-kg8qdo2yz-vamsireddy143rs-projects.vercel.app/
+**Loom Video**: https://www.loom.com/share/0fec5d9ca0de48feb963ec3b01f1d358
 
 ## 📌 Project Overview
 **JobHunt AI** is a full-stack Generative AI application designed to solve the painful "black box" problem of job hunting. It uses **Pydantic AI** to act as a personalized Career Coach.
