@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobHunt AI</title>
+  <!-- Goggle Fonts: Outfit (Headings) & Inter (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+    rel="stylesheet">
+
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+        --font-sans: 'Inter', sans-serif;
+        --font-display: 'Outfit', sans-serif;
+        
+        --color-glass: rgba(255, 255, 255, 0.03);
+        --color-glass-border: rgba(255, 255, 255, 0.08);
+        --color-neon-cyan: #06b6d4;
+        --color-neon-purple: #8b5cf6;
+      }
+      
+      .font-display { font-family: var(--font-display); }
+      
+      /* Smooth Scrolling */
+      html { scroll-behavior: smooth; }
+    </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
