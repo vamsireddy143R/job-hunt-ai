@@ -48,20 +48,3 @@ Students and job seekers often apply to hundreds of jobs without understanding w
         ```
 
 ---
-
-## 🌐 Deployment Instructions
-
-### 1. Backend (Render.com)
-1.  Push code to GitHub.
-2.  New "Web Service" -> Connect Repo.
-3.  **Root Directory**: `server`
-4.  **Build Command**: `pip install -r requirements.txt`
-5.  **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-6.  **Environment Variables**: Add `OPENROUTER_API_KEY`.
-
-### 2. Frontend (Vercel)
-1.  New Project -> Connect Repo.
-2.  **Root Directory**: `client`
-3.  **Build Command**: `npm run build`
-4.  **Install Command**: `npm install`
-5.  Deploy! 🚀
