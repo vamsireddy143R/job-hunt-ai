@@ -65,15 +65,3 @@ Students and job seekers often apply to hundreds of jobs without understanding w
 3.  **Build Command**: `npm run build`
 4.  **Install Command**: `npm install`
 5.  Deploy! 🚀
-
----
-
-## 🎥 Video Demo Script (1 Minute Loom)
-1.  **Intro (0:00-0:10)**: "Hi, I'm [Name]. I built JobHunt AI to help students beat the ATS resume bots."
-2.  **The Problem (0:10-0:20)**: "We all hate applying and getting ghosted. My app tells you *why*."
-3.  **Demo (0:20-0:50)**: 
-    *   *Show pasting a Resume & JD.*
-    *   *Click Analyze.*
-    *   *Show the Score & Missing Keywords.*
-    *   *Show the AI-generated Interview Questions.*
-4.  **Tech Stack (0:50-1:00)**: "Built with Pydantic AI for structured reasoning, FastAPI, and React. Hosted on Vercel."
