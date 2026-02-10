@@ -23,7 +23,8 @@ MODELS_TO_TRY = [
     'meta-llama/llama-3.3-70b-instruct:free',      # Primary: Best Quality
     'meta-llama/llama-3.1-8b-instruct:free',       # Secondary: High Speed/Stability
     'mistralai/mistral-7b-instruct:free',          # Backup: Reliable
-    'microsoft/phi-3-mini-128k-instruct:free',     # Last Resort: Very light
+    'huggingfaceh4/zephyr-7b-beta:free',           # Backup: Highly rated 7B model
+    'openchat/openchat-7b:free',                   # Last Resort: Stable
 ]
 
 SYSTEM_PROMPT = (
@@ -64,6 +65,8 @@ async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
         except Exception as e:
             print(f"DEBUG: Failed with {model_name}. Error: {str(e)}")
             last_exception = e
+            # Wait a bit before hitting the next one to avoid flooding
+            await asyncio.sleep(2)
             # Continue to next model loop...
 
     # If all fail
