@@ -18,13 +18,11 @@ os.environ["OPENAI_API_KEY"] = api_key
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
 # MULTI-MODEL FALLBACK LIST
-# We try these in order. If one fails (429/400/500), we try the next.
+# RESTRICTED TO ONLY KNOWN STABLE META MODELS (No Experimental)
 MODELS_TO_TRY = [
     'meta-llama/llama-3.3-70b-instruct:free',      # Primary: Best Quality
     'meta-llama/llama-3.1-8b-instruct:free',       # Secondary: High Speed/Stability
     'mistralai/mistral-7b-instruct:free',          # Backup: Reliable
-    'huggingfaceh4/zephyr-7b-beta:free',           # Backup: Highly rated 7B model
-    'openchat/openchat-7b:free',                   # Last Resort: Stable
 ]
 
 SYSTEM_PROMPT = (
