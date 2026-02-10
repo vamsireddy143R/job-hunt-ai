@@ -3,19 +3,15 @@ import asyncio
 from pydantic_ai import Agent
 from dotenv import load_dotenv
 from schemas import AnalysisResult
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.gemini import GeminiModel
 
 # Load environment variables
 load_dotenv()
 
 # Check API Key
-api_key = os.getenv("OPENROUTER_API_KEY")
+api_key = os.getenv("OPENROUTER_API_KEY") # We keep the env var name for compatibility, but it holds the Google Key now
 if not api_key:
-    raise ValueError("OPENROUTER_API_KEY is not set")
-
-# Configure OpenAI (Google Gemini via OpenAI-Compatible Endpoint)
-os.environ["OPENAI_API_KEY"] = api_key
-os.environ["OPENAI_BASE_URL"] = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    raise ValueError("API Key is missing. Please check OPENROUTER_API_KEY in Render.")
 
 import re
 
@@ -50,8 +46,9 @@ async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
     for model_name in MODELS_TO_TRY:
         print(f"DEBUG: Trying Model -> {model_name} ...")
         try:
-            # Initialize Agent with specific model
-            model = OpenAIModel(model_name)
+            # Initialize Agent with Native Gemini Model
+            # We pass the API key explicitly to avoid credential issues
+            model = GeminiModel(model_name, api_key=api_key)
             agent = Agent(model, system_prompt=SYSTEM_PROMPT)
             
             # Run Agent

@@ -7,3 +7,4 @@ httpx
 pypdf
 python-multipart
 tenacity
+google-generativeai
