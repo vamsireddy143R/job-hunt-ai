@@ -13,23 +13,17 @@ api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     raise ValueError("OPENROUTER_API_KEY is not set")
 
-# Configure OpenAI (OpenRouter) via Env Vars
+# Configure OpenAI (Google Gemini via OpenAI-Compatible Endpoint)
 os.environ["OPENAI_API_KEY"] = api_key
-os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
+os.environ["OPENAI_BASE_URL"] = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
 import re
 
 # MULTI-MODEL FALLBACK LIST
-# Adding diverse providers to ensure at least one works (DeepSeek, Qwen, Zephyr, Mythomax)
+# Using Google Gemini (Native) - Free & High Limits
 MODELS_TO_TRY = [
-    'deepseek/deepseek-r1:free',                   # Smartest Free Model (if available)
-    'deepseek/deepseek-r1-distill-llama-70b:free', # High Quality Distill
-    'qwen/qwen-2.5-72b-instruct:free',            # Enterprise Grade
-    'qwen/qwen-2.5-coder-32b-instruct:free',       # Strong Alternative
-    'meta-llama/llama-3.3-70b-instruct:free',      # Llama Backup
-    'huggingfaceh4/zephyr-7b-beta:free',           # Reliable 7B
-    'mistralai/mistral-7b-instruct:free',          # Old Reliable
-    'gryphe/mythomax-l2-13b:free',                 # Last Resort (Uncensored/Creative)
+    'gemini-1.5-flash',             # Production Ready, Fast, Stable
+    'gemini-2.0-flash-exp',         # Next Gen (Preview)
 ]
 
 SYSTEM_PROMPT = (
