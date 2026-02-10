@@ -47,8 +47,9 @@ async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
         print(f"DEBUG: Trying Model -> {model_name} ...")
         try:
             # Initialize Agent with Native Gemini Model
-            # We pass the API key explicitly to avoid credential issues
-            model = GeminiModel(model_name, api_key=api_key)
+            # Set GEMINI_API_KEY environment variable for pydantic-ai
+            os.environ["GEMINI_API_KEY"] = api_key
+            model = GeminiModel(model_name)
             agent = Agent(model, system_prompt=SYSTEM_PROMPT)
             
             # Run Agent
