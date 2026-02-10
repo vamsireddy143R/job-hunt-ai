@@ -1,85 +1,90 @@
 import os
 import asyncio
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import Agent
 from dotenv import load_dotenv
+from schemas import AnalysisResult
+from pydantic_ai.models.openai import OpenAIModel
 
 # Load environment variables
 load_dotenv()
-
-from schemas import AnalysisRequest, AnalysisResult, SkillGap, TailoredPoint
-from pydantic_ai.models.openai import OpenAIModel
 
 # Check API Key
 api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     raise ValueError("OPENROUTER_API_KEY is not set")
 
-# Configure OpenAI (OpenRouter) via Env Vars to avoid Constructor Issues
+# Configure OpenAI (OpenRouter) via Env Vars
 os.environ["OPENAI_API_KEY"] = api_key
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from pydantic_ai.exceptions import ModelHTTPError
+# MULTI-MODEL FALLBACK LIST
+# We try these in order. If one fails (429/400/500), we try the next.
+MODELS_TO_TRY = [
+    'meta-llama/llama-3.3-70b-instruct:free',      # Primary: Best Quality
+    'meta-llama/llama-3.1-8b-instruct:free',       # Secondary: High Speed/Stability
+    'mistralai/mistral-7b-instruct:free',          # Backup: Reliable
+    'microsoft/phi-3-mini-128k-instruct:free',     # Last Resort: Very light
+]
 
-# Configure the model (Switched to Llama 3.1 8B Instruct Free - High Availability)
-model = OpenAIModel('meta-llama/llama-3.1-8b-instruct:free')
-
-# Configure the agent
-agent = Agent(
-    model,
-    system_prompt=(
-        "You are an expert Technical Recruiter and Career Coach. "
-        "Your goal is to help a candidate land a job by analyzing their resume against a job description. "
-        "Be critical but constructive. "
-        "You must respond with a valid JSON object matching the following structure:\n"
-        "{\n"
-        '  "match_score": 0-100,\n'
-        '  "summary": "Brief summary of the analysis",\n'
-        '  "missing_keywords": ["kw1", "kw2"],\n'
-        '  "tailored_suggestions": [{"original": "text", "improved": "text", "reason": "why"}],\n'
-        '  "interview_questions": ["q1", "q2"]\n'
-        "}\n"
-        "Return ONLY the JSON. No preamble."
-    ),
+SYSTEM_PROMPT = (
+    "You are an expert Technical Recruiter and Career Coach. "
+    "Your goal is to help a candidate land a job by analyzing their resume against a job description. "
+    "Be critical but constructive. "
+    "You must respond with a valid JSON object matching the following structure:\n"
+    "{\n"
+    '  "match_score": 0-100,\n'
+    '  "summary": "Brief summary of the analysis",\n'
+    '  "missing_keywords": ["kw1", "kw2"],\n'
+    '  "tailored_suggestions": [{"original": "text", "improved": "text", "reason": "why"}],\n'
+    '  "interview_questions": ["q1", "q2"]\n'
+    "}\n"
+    "Return ONLY the JSON. No preamble."
 )
-
-# Retry logic: Try 5 times, waiting 2s, 4s, 8s... if 429/5xx error occurs
-@retry(
-    retry=retry_if_exception_type((ModelHTTPError, Exception)), # Retry on PyAI errors or generic crashes
-    stop=stop_after_attempt(5),
-    wait=wait_exponential(multiplier=1, min=2, max=10)
-)
-async def run_agent_with_retry(prompt: str):
-    print("DEBUG: Attempting AI Analysis...")
-    return await agent.run(prompt)
 
 async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
     prompt = f"RESUME:\n{resume_text}\n\nJOB DESCRIPTION:\n{jd_text}"
-    
-    # Run the agent (Text Mode) with Retry
-    result = await run_agent_with_retry(prompt)
-    
-    # DEBUG: Inspect the result object to fix the AttributeError
-    print("DEBUG: Agent Run Successful.")
-    print(f"DEBUG: Result Type: {type(result)}")
-    print(f"DEBUG: Result Dir: {dir(result)}")
-    
-    # Robust extraction of text
+    last_exception = None
+
+    print(f"DEBUG: Starting Analysis. Models available: {len(MODELS_TO_TRY)}")
+
+    for model_name in MODELS_TO_TRY:
+        print(f"DEBUG: Trying Model -> {model_name} ...")
+        try:
+            # Initialize Agent with specific model
+            model = OpenAIModel(model_name)
+            agent = Agent(model, system_prompt=SYSTEM_PROMPT)
+            
+            # Run Agent
+            result = await agent.run(prompt)
+            
+            # If we get here, it worked!
+            print(f"DEBUG: Success with {model_name}!")
+            return parse_result(result)
+            
+        except Exception as e:
+            print(f"DEBUG: Failed with {model_name}. Error: {str(e)}")
+            last_exception = e
+            # Continue to next model loop...
+
+    # If all fail
+    print("CRITICAL: All models failed.")
+    raise last_exception or Exception("All AI models failed to respond.")
+
+def parse_result(result):
+    """Helper to safely extract JSON from Agent result"""
     cleaned_json = ""
     if hasattr(result, 'data'):
         cleaned_json = result.data
-    elif hasattr(result, 'output'): # Found via debugging
+    elif hasattr(result, 'output'):
         cleaned_json = result.output
     elif hasattr(result, 'content'):
         cleaned_json = result.content
-    elif hasattr(result, 'return_values'): 
+    elif hasattr(result, 'return_values') and result.return_values: 
         cleaned_json = result.return_values[0]
     else:
-        # Fallback: hope the string representation is the text
-        print("DEBUG: Could not find .data or .content. Using str(result).")
         cleaned_json = str(result)
 
-    # Clean and Parse JSON manually
+    # Clean Markdown
     cleaned_json = str(cleaned_json).strip()
     if cleaned_json.startswith("```json"):
         cleaned_json = cleaned_json.split("```json")[1].split("```")[0].strip()
