@@ -17,14 +17,14 @@ if not api_key:
 os.environ["OPENAI_API_KEY"] = api_key
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
+import re
+
 # MULTI-MODEL FALLBACK LIST
-# RESTRICTED TO ONLY KNOWN STABLE META MODELS
-# We alternate between the Fast (8B) and Smart (70B) models to maximize success.
+# Switching to DeepSeek & Qwen (Newest Free Providers) to avoid Llama 402/429 blocks
 MODELS_TO_TRY = [
-    'meta-llama/llama-3.1-8b-instruct:free',       # 1. Fast & Stable
-    'meta-llama/llama-3.3-70b-instruct:free',      # 2. Smart (High Quality)
-    'meta-llama/llama-3.1-8b-instruct:free',       # 3. Retry Fast
-    'meta-llama/llama-3.3-70b-instruct:free',      # 4. Retry Smart
+    'deepseek/deepseek-r1-distill-llama-70b:free', # High Intelligence, Free
+    'qwen/qwen-2.5-72b-instruct:free',            # Very Stable, Free
+    'meta-llama/llama-3.1-8b-instruct:free',       # Old Reliable Backup
 ]
 
 SYSTEM_PROMPT = (
@@ -65,8 +65,8 @@ async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
         except Exception as e:
             print(f"DEBUG: Failed with {model_name}. Error: {str(e)}")
             last_exception = e
-            # Wait a bit before hitting the next one to avoid flooding
-            await asyncio.sleep(2)
+            # Wait a bit before hitting the next one
+            await asyncio.sleep(1)
             # Continue to next model loop...
 
     # If all fail
@@ -87,8 +87,12 @@ def parse_result(result):
     else:
         cleaned_json = str(result)
 
-    # Clean Markdown
     cleaned_json = str(cleaned_json).strip()
+    
+    # Remove DeepSeek <think> tags if present
+    cleaned_json = re.sub(r'<think>.*?</think>', '', cleaned_json, flags=re.DOTALL).strip()
+
+    # Parse Markdown Code Blocks
     if cleaned_json.startswith("```json"):
         cleaned_json = cleaned_json.split("```json")[1].split("```")[0].strip()
     elif cleaned_json.startswith("```"):
