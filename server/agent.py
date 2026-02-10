@@ -16,10 +16,15 @@ if not api_key:
 import re
 
 # MULTI-MODEL FALLBACK LIST
-# Using Google Gemini (Native) - Free & High Limits
+# Using Google Gemini (Native)
+# We try versioned names to avoid 'Not Found' alias errors
 MODELS_TO_TRY = [
-    'gemini-1.5-flash',             # Production Ready, Fast, Stable
-    'gemini-2.0-flash-exp',         # Next Gen (Preview)
+    'gemini-1.5-flash',             # Standard Alias
+    'gemini-1.5-flash-001',         # Specific Version (Reliable)
+    'gemini-1.5-flash-002',         # Newest Flash
+    'gemini-1.5-pro',               # Standard Pro
+    'gemini-1.5-pro-001',           # Specific Pro
+    'gemini-pro',                   # Legacy 1.0 (Backup)
 ]
 
 SYSTEM_PROMPT = (
