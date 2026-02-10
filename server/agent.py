@@ -18,8 +18,8 @@ if not api_key:
 os.environ["OPENAI_API_KEY"] = api_key
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
-# Configure the model (Switched to Gemini 2.0 Flash Free - Higher Rate Limits)
-model = OpenAIModel('google/gemini-2.0-flash-exp:free')
+# Configure the model (Switched to Gemini 2.0 Flash Thinking Exp Free - Latest)
+model = OpenAIModel('google/gemini-2.0-flash-thinking-exp:free')
 
 # Configure the agent
 agent = Agent(
