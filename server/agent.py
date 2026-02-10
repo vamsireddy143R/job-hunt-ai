@@ -21,8 +21,8 @@ os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from pydantic_ai.exceptions import ModelHTTPError
 
-# Configure the model (Reverted to Llama 3.3 70B Free - Valid ID)
-model = OpenAIModel('meta-llama/llama-3.3-70b-instruct:free')
+# Configure the model (Switched to Llama 3.1 8B Instruct Free - High Availability)
+model = OpenAIModel('meta-llama/llama-3.1-8b-instruct:free')
 
 # Configure the agent
 agent = Agent(
