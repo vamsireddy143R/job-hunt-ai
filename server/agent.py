@@ -18,8 +18,11 @@ if not api_key:
 os.environ["OPENAI_API_KEY"] = api_key
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
-# Configure the model (Switched to Gemini 2.0 Flash Lite Preview Free - Stable)
-model = OpenAIModel('google/gemini-2.0-flash-lite-preview-02-05:free')
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from pydantic_ai.exceptions import ModelHTTPError
+
+# Configure the model (Reverted to Llama 3.3 70B Free - Valid ID)
+model = OpenAIModel('meta-llama/llama-3.3-70b-instruct:free')
 
 # Configure the agent
 agent = Agent(
@@ -40,11 +43,21 @@ agent = Agent(
     ),
 )
 
+# Retry logic: Try 5 times, waiting 2s, 4s, 8s... if 429/5xx error occurs
+@retry(
+    retry=retry_if_exception_type((ModelHTTPError, Exception)), # Retry on PyAI errors or generic crashes
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
+async def run_agent_with_retry(prompt: str):
+    print("DEBUG: Attempting AI Analysis...")
+    return await agent.run(prompt)
+
 async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
     prompt = f"RESUME:\n{resume_text}\n\nJOB DESCRIPTION:\n{jd_text}"
     
-    # Run the agent (Text Mode)
-    result = await agent.run(prompt)
+    # Run the agent (Text Mode) with Retry
+    result = await run_agent_with_retry(prompt)
     
     # DEBUG: Inspect the result object to fix the AttributeError
     print("DEBUG: Agent Run Successful.")

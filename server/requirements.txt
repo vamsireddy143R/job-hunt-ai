@@ -6,3 +6,4 @@ openai
 httpx
 pypdf
 python-multipart
+tenacity
