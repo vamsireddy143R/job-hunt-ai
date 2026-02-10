@@ -20,11 +20,16 @@ os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 import re
 
 # MULTI-MODEL FALLBACK LIST
-# Switching to DeepSeek & Qwen (Newest Free Providers) to avoid Llama 402/429 blocks
+# Adding diverse providers to ensure at least one works (DeepSeek, Qwen, Zephyr, Mythomax)
 MODELS_TO_TRY = [
-    'deepseek/deepseek-r1-distill-llama-70b:free', # High Intelligence, Free
-    'qwen/qwen-2.5-72b-instruct:free',            # Very Stable, Free
-    'meta-llama/llama-3.1-8b-instruct:free',       # Old Reliable Backup
+    'deepseek/deepseek-r1:free',                   # Smartest Free Model (if available)
+    'deepseek/deepseek-r1-distill-llama-70b:free', # High Quality Distill
+    'qwen/qwen-2.5-72b-instruct:free',            # Enterprise Grade
+    'qwen/qwen-2.5-coder-32b-instruct:free',       # Strong Alternative
+    'meta-llama/llama-3.3-70b-instruct:free',      # Llama Backup
+    'huggingfaceh4/zephyr-7b-beta:free',           # Reliable 7B
+    'mistralai/mistral-7b-instruct:free',          # Old Reliable
+    'gryphe/mythomax-l2-13b:free',                 # Last Resort (Uncensored/Creative)
 ]
 
 SYSTEM_PROMPT = (
