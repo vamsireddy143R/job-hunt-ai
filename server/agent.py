@@ -13,19 +13,10 @@ api_key = os.getenv("OPENROUTER_API_KEY") # We keep the env var name for compati
 if not api_key:
     raise ValueError("API Key is missing. Please check OPENROUTER_API_KEY in Render.")
 
-import re
+import google.generativeai as genai
 
-# MULTI-MODEL FALLBACK LIST
-# Using Google Gemini (Native)
-# We try versioned names to avoid 'Not Found' alias errors
-MODELS_TO_TRY = [
-    'gemini-1.5-flash',             # Standard Alias
-    'gemini-1.5-flash-001',         # Specific Version (Reliable)
-    'gemini-1.5-flash-002',         # Newest Flash
-    'gemini-1.5-pro',               # Standard Pro
-    'gemini-1.5-pro-001',           # Specific Pro
-    'gemini-pro',                   # Legacy 1.0 (Backup)
-]
+# Configure GenAI Native Client
+genai.configure(api_key=api_key)
 
 SYSTEM_PROMPT = (
     "You are an expert Technical Recruiter and Career Coach. "
@@ -42,38 +33,70 @@ SYSTEM_PROMPT = (
     "Return ONLY the JSON. No preamble."
 )
 
+def get_best_model_name():
+    """Dynamically find the best available Gemini model to avoid 404s."""
+    print("DEBUG: Listing available Google Models...")
+    try:
+        available_models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                available_models.append(m.name)
+        
+        print(f"DEBUG: Found models: {available_models}")
+        
+        # Priority List
+        priorities = [
+            'models/gemini-1.5-flash',
+            'models/gemini-1.5-flash-001',
+            'models/gemini-1.5-pro',
+            'models/gemini-1.5-pro-001',
+            'models/gemini-pro',
+            'models/gemini-1.0-pro'
+        ]
+        
+        for p in priorities:
+            if p in available_models:
+                print(f"DEBUG: Selected specific model: {p}")
+                return p # Return full 'models/...' string which is safer
+        
+        # Fallback: any gemini model
+        for m in available_models:
+            if 'gemini' in m:
+                print(f"DEBUG: Selected fallback model: {m}")
+                return m
+                
+        return 'gemini-1.5-flash' # Absolute fallback
+
+    except Exception as e:
+        print(f"DEBUG: Model listing failed ({e}). Defaulting to gemini-1.5-flash")
+        return 'gemini-1.5-flash'
+
 async def analyze_job_match(resume_text: str, jd_text: str) -> AnalysisResult:
     prompt = f"RESUME:\n{resume_text}\n\nJOB DESCRIPTION:\n{jd_text}"
-    last_exception = None
-
-    print(f"DEBUG: Starting Analysis. Models available: {len(MODELS_TO_TRY)}")
-
-    for model_name in MODELS_TO_TRY:
-        print(f"DEBUG: Trying Model -> {model_name} ...")
-        try:
-            # Initialize Agent with Native Gemini Model
-            # Set GEMINI_API_KEY environment variable for pydantic-ai
-            os.environ["GEMINI_API_KEY"] = api_key
-            model = GeminiModel(model_name)
-            agent = Agent(model, system_prompt=SYSTEM_PROMPT)
-            
-            # Run Agent
-            result = await agent.run(prompt)
-            
-            # If we get here, it worked!
-            print(f"DEBUG: Success with {model_name}!")
-            return parse_result(result)
-            
-        except Exception as e:
-            print(f"DEBUG: Failed with {model_name}. Error: {str(e)}")
-            last_exception = e
-            # Wait a bit before hitting the next one
-            await asyncio.sleep(1)
-            # Continue to next model loop...
-
-    # If all fail
-    print("CRITICAL: All models failed.")
-    raise last_exception or Exception("All AI models failed to respond.")
+    
+    # 1. auto-detect model
+    model_name = get_best_model_name()
+    # Strip 'models/' prefix if pydantic-ai adds it automatically (it often does)
+    # But genai.list_models returns 'models/foo'. Pydantic usually expects just 'foo' or 'models/foo'.
+    # Let's try passing the clean name.
+    clean_model_name = model_name.replace('models/', '')
+    
+    print(f"DEBUG: Initializing Agent with {clean_model_name}...")
+    
+    try:
+        # Set GEMINI_API_KEY environment variable for pydantic-ai
+        os.environ["GEMINI_API_KEY"] = api_key
+        model = GeminiModel(clean_model_name)
+        agent = Agent(model, system_prompt=SYSTEM_PROMPT)
+        
+        # Run Agent
+        result = await agent.run(prompt)
+        print("DEBUG: Agent Run Successful.")
+        return parse_result(result)
+        
+    except Exception as e:
+        print(f"CRITICAL: Agent failed. Error: {str(e)}")
+        raise e
 
 def parse_result(result):
     """Helper to safely extract JSON from Agent result"""
