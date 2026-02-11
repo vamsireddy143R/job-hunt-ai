@@ -1,8 +1,8 @@
 # JobHunt AI - Resume & Interview Agent 🚀
 
-**Student Name**: [Your Name]
-**Project Link**: [Your Vercel URL]
-**Loom Video**: [Your Loom Link]
+**Student Name**: Munagala Chandra Vamsi Reddy
+**Project Link**: https://job-hunt-ai.vercel.app
+
 
 ## 📌 Project Overview
 **JobHunt AI** is a full-stack Generative AI application designed to solve the painful "black box" problem of job hunting. It uses **Pydantic AI** to act as a personalized Career Coach.
@@ -46,34 +46,3 @@ Students and job seekers often apply to hundreds of jobs without understanding w
         ```
         OPENROUTER_API_KEY=sk-or-your-key-here
         ```
-
----
-
-## 🌐 Deployment Instructions
-
-### 1. Backend (Render.com)
-1.  Push code to GitHub.
-2.  New "Web Service" -> Connect Repo.
-3.  **Root Directory**: `server`
-4.  **Build Command**: `pip install -r requirements.txt`
-5.  **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-6.  **Environment Variables**: Add `OPENROUTER_API_KEY`.
-
-### 2. Frontend (Vercel)
-1.  New Project -> Connect Repo.
-2.  **Root Directory**: `client`
-3.  **Build Command**: `npm run build`
-4.  **Install Command**: `npm install`
-5.  Deploy! 🚀
-
----
-
-## 🎥 Video Demo Script (1 Minute Loom)
-1.  **Intro (0:00-0:10)**: "Hi, I'm [Name]. I built JobHunt AI to help students beat the ATS resume bots."
-2.  **The Problem (0:10-0:20)**: "We all hate applying and getting ghosted. My app tells you *why*."
-3.  **Demo (0:20-0:50)**: 
-    *   *Show pasting a Resume & JD.*
-    *   *Click Analyze.*
-    *   *Show the Score & Missing Keywords.*
-    *   *Show the AI-generated Interview Questions.*
-4.  **Tech Stack (0:50-1:00)**: "Built with Pydantic AI for structured reasoning, FastAPI, and React. Hosted on Vercel."
